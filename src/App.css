@@ -31,3 +31,8 @@
     transform: rotate(360deg);
   }
 }
+
+.App_errorMessage {
+  color: red;
+  padding: 10px 0;
+}
