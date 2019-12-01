@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, Grid, Paper, TextField} from '@material-ui/core';
 import './App.css';
+import {setCookie, getCookie} from './utils/saveCookie';
 
 require('dotenv').config();
 
@@ -20,20 +21,31 @@ class App extends React.Component {
         this.controlSwitch = this.controlSwitch.bind(this);
         this.controlBulb = this.controlBulb.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
+        this.handleLogin = this.handleLogin.bind(this);
+    }
+
+    async componentDidMount() {
+        let userInfo = getCookie();
+        if(userInfo){
+            this.handleLogin(userInfo.username, userInfo.uid);
+        }
     }
 
     handleChange = name => event => {
         this.setState({[name]: event.target.value});
     };
 
-    async handleInputChange() {
-        const {username, password} = this.state;
+    async handleLogin (username, password) {
+        debugger;
         try {
             if(username && password){
                 const tpLink = await login(username, password, "");
                 if (tpLink && tpLink.error_code) {
                     this.setState({isSignedIn: false, showError: true});
                 } else {
+                    if(!getCookie()){
+                        setCookie({uname: username, uid: password});
+                    }
                     this.setState({isSignedIn: true, showError: false});
                     this.setState({kasaAccProps: tpLink});
                     let deviceList = await tpLink.getDeviceList();
@@ -46,6 +58,11 @@ class App extends React.Component {
         } catch (e) {
             console.log(e)
         }
+    }
+
+     handleInputChange() {
+        const {username, password} = this.state;
+        this.handleLogin(username, password);
     }
 
     async controlSwitch(on) {
@@ -80,7 +97,7 @@ class App extends React.Component {
         return (
             <div>
                 <Grid item xs={12} sm={3}>
-                    {!isSignedIn && <Paper>
+                    {!isSignedIn && !getCookie() && <Paper>
                           <div>
                             <TextField
                                 id="username"
